@@ -1,0 +1,68 @@
+# This is the name of your automated workflow, which you will see in the "Actions" tab on GitHub.
+name: Build Android APK
+
+# This section defines when the workflow should run.
+on:
+  # It runs automatically every time you push new code to your "main" branch.
+  push:
+    branches: [ main ]
+  # This line allows you to also run the workflow manually from the GitHub Actions page.
+  workflow_dispatch:
+
+# A workflow is made up of one or more "jobs" that can run in parallel or sequence.
+jobs:
+  # We have a single job called "build".
+  build:
+    # This specifies that the job will run on a fresh, virtual computer running the latest version of Ubuntu Linux.
+    runs-on: ubuntu-latest
+
+    # "steps" are the individual tasks that the job will execute in order.
+    steps:
+      # Step 1: Checks out your repository's code so the virtual machine can access it.
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Sets up the Java Development Kit (JDK), which is required to build Android apps.
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Step 3: Sets up Node.js, which is needed to run your app's build scripts and Capacitor.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Using a modern version of Node
+          cache: 'npm'      # Caches dependencies to speed up future builds
+
+      # Step 4: Installs all the required packages (React, Capacitor, etc.) defined in your package.json file.
+      - name: Install Dependencies
+        run: npm install
+
+      # Step 5: This runs your custom 'build' script from package.json.
+      # It creates the 'dist' folder and copies your web app files into it.
+      - name: Build Web App
+        run: npm run build
+
+      # Step 6: Initializes Capacitor and creates the native Android project structure inside the virtual machine.
+      - name: Initialize Capacitor for Android
+        run: npx cap add android
+
+      # Step 7: Copies your web app from the 'dist' folder into the newly created Android project.
+      - name: Sync Web Assets
+        run: npx cap sync android
+
+      # Step 8: Navigates into the 'android' folder and runs the Gradle command to compile your code into an APK file.
+      - name: Build Debug APK
+        run: |
+          cd android
+          ./gradlew assembleDebug
+
+      # Step 9: Takes the generated APK file and uploads it as a downloadable "artifact".
+      # This is how you will get the final file.
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: aidbridge-apk # This will be the name of the downloadable file.
+          path: android/app/build/outputs/apk/debug/app-debug.apk # The exact location of the APK file after the build is complete.
