@@ -1,0 +1,6 @@
+{
+  "appId": "com.aidbridge.app",
+  "appName": "AidBridge",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

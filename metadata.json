@@ -1,0 +1,5 @@
+{
+  "name": "AidBridge",
+  "description": "A platform to connect donors with NGOs, facilitating the donation of items to those in need. Users can list items, and NGOs can browse and arrange for pickup through a simulated chat interface.",
+  "requestFramePermissions": []
+}
